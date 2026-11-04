@@ -8,7 +8,8 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 29
+        // Keep in sync with :app so the whole project targets the same floor.
+        minSdk = 28
     }
 
     compileOptions {

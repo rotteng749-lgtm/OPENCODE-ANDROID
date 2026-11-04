@@ -37,6 +37,11 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Terminal: bell feedback and a CPU wake lock only while a command is
+         actively producing output. Never held while the screen is idle. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:name=".OpenCodeApplication"
         android:label="OpenCode"

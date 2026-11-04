@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.bidzz.opencode.R
+import dev.bidzz.opencode.core.design.GlassSurface
 import dev.bidzz.opencode.core.design.OpenCodeTheme
 import dev.bidzz.opencode.core.design.OpenCodeTypography
 
@@ -55,11 +56,12 @@ fun MessageBubble(
             modifier = modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(dims.userBubbleMaxWidthFraction)
-                    .background(colors.userBubble, RoundedCornerShape(radius.lg))
-                    .padding(horizontal = spacing.md, vertical = spacing.sm),
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(dims.userBubbleMaxWidthFraction),
+                shape = RoundedCornerShape(18.dp),
+                tint = colors.userBubble,
+                elevation = 10.dp,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = spacing.md, vertical = spacing.sm),
             ) {
                 // User text is plain: markdown the user typed is not rendered as
                 // formatting, so what they see is what they sent.
@@ -115,11 +117,12 @@ fun MessageBubble(
         }
 
         Role.ERROR -> Row(modifier = modifier.fillMaxWidth()) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth(dims.userBubbleMaxWidthFraction)
-                    .background(colors.surfaceSunken, RoundedCornerShape(radius.sm))
-                    .padding(horizontal = spacing.md, vertical = spacing.sm),
+            GlassSurface(
+                modifier = Modifier.fillMaxWidth(dims.userBubbleMaxWidthFraction),
+                shape = RoundedCornerShape(14.dp),
+                tint = colors.danger.copy(alpha = 0.12f),
+                elevation = 8.dp,
+                contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = spacing.md, vertical = spacing.sm),
             ) {
                 Column {
                     Text(

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
@@ -35,6 +36,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.stringResource
@@ -43,6 +46,7 @@ import dev.bidzz.opencode.R
 import dev.bidzz.opencode.ui.sessions.label
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import dev.bidzz.opencode.core.design.GlassSurface
 import dev.bidzz.opencode.core.design.OpenCodeTheme
 import dev.bidzz.opencode.core.design.OpenCodeTypography
 import dev.bidzz.opencode.core.design.Status
@@ -78,6 +82,7 @@ fun ChatScreen(
     onProjectClick: () -> Unit,
     onFilesClick: () -> Unit,
     onSettingsClick: () -> Unit,
+    onTerminalClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors = OpenCodeTheme.colors
@@ -119,13 +124,14 @@ fun ChatScreen(
                 onFiles = { closeThen(onFilesClick) },
                 onProject = { closeThen(onProjectClick) },
                 onSettings = { closeThen(onSettingsClick) },
+                onTerminal = { closeThen(onTerminalClick) },
             )
         },
     ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
-                .background(colors.background)
+                .background(Color.Transparent)
                 .statusBarsPadding()
                 .imePadding(),
         ) {
@@ -340,15 +346,26 @@ private fun ChatDrawer(
     onFiles: () -> Unit,
     onProject: () -> Unit,
     onSettings: () -> Unit,
+    onTerminal: () -> Unit,
 ) {
     val colors = OpenCodeTheme.colors
     val spacing = OpenCodeTheme.tokens.spacing
 
     ModalDrawerSheet(
-        drawerContainerColor = colors.surface,
+        drawerContainerColor = colors.surfaceRaised,
         drawerContentColor = colors.onSurface,
         modifier = Modifier.widthIn(max = 320.dp),
     ) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(Color.Transparent, colors.accent.copy(alpha = 0.5f), Color.Transparent),
+                    ),
+                ),
+        )
         Column(Modifier.padding(top = spacing.lg)) {
             Text(
                 text = "OpenCode",
@@ -366,6 +383,7 @@ private fun ChatDrawer(
             )
 
             DrawerItem(stringResource(R.string.chat_new_session), Glyph.NewChat, onNewSession, accent = true)
+            DrawerItem(stringResource(R.string.terminal_title), Glyph.Terminal, onTerminal)
             DrawerItem(stringResource(R.string.drawer_files), Glyph.File, onFiles)
             DrawerItem(stringResource(R.string.drawer_project), Glyph.Folder, onProject)
             DrawerItem(stringResource(R.string.settings_title), Glyph.Sliders, onSettings)
@@ -401,7 +419,7 @@ private fun ChatDrawer(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .background(if (selected) colors.surfaceSunken else colors.surface)
+                        .background(if (selected) colors.accent.copy(alpha = 0.14f) else Color.Transparent)
                         .clickable { onOpenSession(row.id) }
                         .padding(horizontal = spacing.xl, vertical = spacing.sm),
                 ) {
@@ -458,17 +476,17 @@ private fun JumpToLatest(onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = OpenCodeTheme.colors
     val label = stringResource(R.string.chat_jump_latest)
 
-    Box(
+    GlassSurface(
         modifier = modifier
-            .size(40.dp)
-            .background(colors.surface, CircleShape)
-            .border(0.5.dp, colors.outline, CircleShape)
-            .clip(CircleShape)
-            .semantics { contentDescription = label }
-            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
+            .size(44.dp)
+            .semantics { contentDescription = label },
+        shape = CircleShape,
+        elevation = 10.dp,
+        onClick = onClick,
     ) {
-        GlyphIcon(Glyph.ArrowDown, tint = colors.onSurface, size = 20.dp)
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            GlyphIcon(Glyph.ArrowDown, tint = colors.onSurface, size = 20.dp)
+        }
     }
 }
 
@@ -512,18 +530,19 @@ private fun EmptyChat(engineReady: Boolean, onSuggestion: (String) -> Unit, modi
             ) {
                 SUGGESTIONS.forEach { suggestionRes ->
                     val suggestion = stringResource(suggestionRes)
-                    Text(
-                        text = suggestion,
-                        style = OpenCodeTypography.body,
-                        color = colors.onSurface,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(radius.lg))
-                            .background(colors.surface)
-                            .border(0.5.dp, colors.outline, RoundedCornerShape(radius.lg))
-                            .clickable { onSuggestion(suggestion) }
-                            .padding(horizontal = spacing.lg, vertical = spacing.md),
-                    )
+                    GlassSurface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(radius.lg),
+                        elevation = 8.dp,
+                        onClick = { onSuggestion(suggestion) },
+                    ) {
+                        Text(
+                            text = suggestion,
+                            style = OpenCodeTypography.body,
+                            color = colors.onSurface,
+                            modifier = Modifier.padding(horizontal = spacing.lg, vertical = spacing.md),
+                        )
+                    }
                 }
             }
         }

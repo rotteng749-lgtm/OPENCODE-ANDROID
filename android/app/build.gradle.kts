@@ -23,13 +23,34 @@ android {
 
     defaultConfig {
         applicationId = "dev.bidzz.opencode"
-        minSdk = 29
-        targetSdk = 35
-        versionCode = 2
-        versionName = "0.1.1"
+
+        // targetSdk 28 is deliberate and load-bearing, not an oversight.
+        //
+        // Android 10+ refuses to execve() a binary living in writable app storage
+        // for apps targeting API 29 or newer. That is the same wall Termux itself
+        // hits: termux-app pins targetSdk 28 for exactly this reason. The embedded
+        // Termux userland (bash, apt, dpkg, python, node, ...) must be able to run
+        // from filesDir, so this app pins 28 too.
+        //
+        // The app is distributed from GitHub Releases, never Play, so the store
+        // targetSdk floor does not apply. compileSdk stays 35: the newer APIs are
+        // still available at compile time, only legacy runtime behaviour is opted
+        // into. See README "Why targetSdk 28".
+        minSdk = 28
+        targetSdk = 28
+        versionCode = 3
+        versionName = "0.2.0"
 
         // ABI selection lives in `splits` below: declaring `ndk.abiFilters` as well
         // is a hard configuration error in AGP 8.
+    }
+
+    // targetSdk 28 is deliberate and load-bearing: the Termux userland must run
+    // from writable app storage, which Android 10+ blocks for targetSdk >= 29.
+    // The app is distributed from GitHub Releases, never Play, so the store
+    // targetSdk floor does not apply.
+    lint {
+        disable.add("ExpiredTargetSdkVersion")
     }
 
     signingConfigs {
@@ -116,6 +137,9 @@ dependencies {
     implementation(project(":core:design"))
     implementation(project(":core:common"))
     implementation(project(":core:api"))
+
+    // Terminal UI and PTY bridge, vendored from termux-app under Apache-2.0.
+    implementation(project(":terminal-view"))
 
     // Declared directly: `implementation` in :core:engine does not expose
     // coroutines to consumers, and the activity uses CoroutineScope and Flow.

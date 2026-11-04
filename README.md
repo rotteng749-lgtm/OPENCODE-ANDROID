@@ -7,7 +7,7 @@
 **The real [OpenCode](https://github.com/anomalyco/opencode) AI coding agent, running on your phone.**<br/>
 Not a remote control. Not a WebView. Not a chatbot mockup.
 
-[![CI](https://github.com/BIDZZ-RAWR/OPENCODE-ANDROID/actions/workflows/ci.yml/badge.svg)](https://github.com/BIDZZ-RAWR/OPENCODE-ANDROID/actions/workflows/ci.yml)
+[![CI](https://github.com/BIDZZ-RAWR/OPENCODE-ANDROID/actions/workflows/build.yml/badge.svg)](https://github.com/BIDZZ-RAWR/OPENCODE-ANDROID/actions/workflows/build.yml)
 [![Release](https://img.shields.io/github/v/release/BIDZZ-RAWR/OPENCODE-ANDROID?include_prereleases&label=release)](https://github.com/BIDZZ-RAWR/OPENCODE-ANDROID/releases)
 [![License: MIT](https://img.shields.io/badge/license-MIT-b3f834)](LICENSE)
 ![Android 10+](https://img.shields.io/badge/Android-10%2B-b3f834)
@@ -49,13 +49,14 @@ on `127.0.0.1`, and the only network traffic is the call to the model provider *
 | **Files and diffs** | Browse the project, read and edit files with syntax highlighting, and review real `git` diffs with A/M/D badges. |
 | **Search that works** | `git` and `ripgrep` are bundled, so the agent's `grep` and `glob` tools function. |
 | **Session history** | Reopen any past conversation, for this project or all of them. |
+| **Real terminal** | A full Termux-style shell with multiple sessions, copy/paste, and `pkg`/`apt` package management. |
 | **Survives the swipe** | A foreground service keeps the engine alive when you leave the app or swipe it from recents. |
 | **Two languages, two themes** | English and Indonesian, switchable at runtime without leaving the screen. Dark and light themes. |
 | **Built-in diagnostics** | Engine state, log, runtime paths, and `git`/`rg` self-checks, so release builds can be debugged without `adb`. |
 
 ### Not yet
 
-MCP servers, an interactive terminal, LSP, session fork/revert, `git` over https (`clone`/`push`/
+MCP servers, LSP, session fork/revert, `git` over https (`clone`/`push`/
 `fetch`), and adaptive tablet layouts. See [`docs/BUILD.md`](docs/BUILD.md#known-gaps) for the
 current list of known gaps.
 
@@ -99,12 +100,13 @@ APKs are large (about 99 MB for arm64) because the engine is a self-contained bi
 
 | | Requirement | Why |
 |---|---|---|
-| **Android** | 10 (API 29) or newer | `minSdk` 29. Older releases are not supported. |
+| **Android** | 10 (API 28) or newer | `minSdk` 28. Older releases are not supported. |
 | **CPU** | **arm64-v8a** | The arm64 APK is the one for phones. `x86_64` exists for emulators and x86 Chromebooks. |
 | **32-bit phones** | **Not supported** | There is no `armeabi-v7a` build, so a 32-bit-only device cannot install this at all. |
 | **Free space** | **About 350 MB** | 98.5 MB APK plus 225.8 MB of native libraries the installer extracts. The installer needs temporary space on top of that. |
 | **RAM** | **Not yet measured** | The engine is a 217 MB binary running a JIT runtime. Small-RAM phones are the likely cause of crashes, but we have no number yet, so we will not invent one. |
 | **Storage access** | All-files access | Required only if you want the agent to work on folders outside the app. |
+| **Network** | Internet for first terminal use | The terminal downloads a ~30 MB Termux bootstrap on first launch. |
 
 Android 15+ devices with 16 KB memory pages work: every bundled binary is 16 KB aligned.
 
@@ -144,6 +146,11 @@ Android 15+ devices with 16 KB memory pages work: every bundled binary is 16 KB 
   checks its health, and restarts it on demand.
 - **Tools.** `git` 2.56.0 and `ripgrep` 15.1.0 are built with NDK 29 and are 16 KB page aligned,
   so they run on Android 15+ devices too.
+- **Terminal.** The `terminal-emulator` and `terminal-view` modules are vendored from Termux
+  (Apache-2.0). The userland bootstrap is downloaded at runtime with SHA-256 verification, and
+  each shell runs inside `proot` so binaries that hardcode `/data/data/com.termux` still work.
+  `minSdk` and `targetSdk` are both 28 because Android 10+ blocks `execve` from writable app
+  storage for `targetSdk >= 29`; this is the same reason Termux itself pins 28.
 - **UI.** Plain Compose with its own small design system (`core:design`) and hand-drawn icons.
   No navigation library and no icon pack.
 
@@ -154,6 +161,8 @@ Android 15+ devices with 16 KB memory pages work: every bundled binary is 16 KB 
 | `core:api` | Typed HTTP client, SSE event stream, DTOs |
 | `core:design` | Colour, type, spacing, and theme tokens |
 | `core:common` | Shared utilities |
+| `terminal-emulator` | Terminal emulator and PTY bridge (vendored from Termux, Apache-2.0) |
+| `terminal-view` | Terminal view widget (vendored from Termux, Apache-2.0) |
 
 ## Building from source
 
@@ -221,12 +230,14 @@ control desktop, bukan WebView.
 - Jejak tool call yang terbaca, dan kartu izin: *Izinkan sekali*, *Selalu*, atau *Tolak*.
 - Hubungkan penyedia sendiri: kunci API atau endpoint kustom, langsung dari aplikasi.
 - Pilih folder proyek di penyimpanan bersama, jelajahi dan edit file, lihat diff git.
+- Terminal Termux asli dengan banyak sesi dan `pkg`/`apt`.
 - `git` dan `ripgrep` sudah dibundel. Engine tetap hidup walau aplikasi di-swipe.
 - Bahasa Indonesia dan Inggris, tema gelap dan terang.
 
 **Pasang:** unduh APK dari halaman [Releases](https://github.com/BIDZZ-RAWR/OPENCODE-ANDROID/releases)
 (`arm64-v8a` untuk hampir semua HP), pasang, lalu berikan *Akses semua file*. Butuh Android 10
-atau lebih baru. Tidak tersedia di Google Play atau F-Droid karena izin akses semua file.
+(API 28) atau lebih baru. Terminal akan mengunduh bootstrap Termux (~30 MB) saat pertama dibuka.
+Tidak tersedia di Google Play atau F-Droid karena izin akses semua file.
 
 Data tetap di perangkat: engine hanya mendengarkan di `127.0.0.1`, dan satu-satunya lalu lintas
 jaringan adalah ke penyedia model yang kamu atur sendiri.

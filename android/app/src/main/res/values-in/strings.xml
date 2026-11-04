@@ -83,6 +83,22 @@
     <string name="drawer_no_sessions">Belum ada sesi</string>
     <string name="drawer_untitled">Tanpa judul</string>
     <string name="drawer_all_sessions">Semua sesi</string>
+
+    <!-- Layar terminal -->
+    <string name="terminal_title">Terminal</string>
+    <string name="terminal_new_session">Sesi baru</string>
+    <string name="terminal_close_session">Tutup sesi</string>
+    <string name="terminal_rename_session">Ubah nama</string>
+    <string name="terminal_copy">Salin</string>
+    <string name="terminal_paste">Tempel</string>
+    <string name="terminal_extra_keys">Tombol ekstra</string>
+    <string name="terminal_bootstrap_title">Memasang userland Termux</string>
+    <string name="terminal_bootstrap_body">Mengunduh paket dasar (~30 MB)…</string>
+    <string name="terminal_bootstrap_error">Tidak bisa memasang userland Termux. Ketuk untuk coba lagi.</string>
+    <string name="terminal_fallback_title">Shell cadangan</string>
+    <string name="terminal_fallback_body">Userland Termux penuh belum tersedia. Kamu memakai shell sistem perangkat.</string>
+    <string name="terminal_session_unnamed">Sesi %1$d</string>
+
     <string name="composer_not_ready">Mesin belum siap</string>
     <string name="composer_busy">Agen sedang bekerja…</string>
     <string name="composer_hint">Tanyakan apa saja tentang proyek ini</string>

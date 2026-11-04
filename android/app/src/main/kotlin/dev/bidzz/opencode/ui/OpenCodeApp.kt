@@ -16,6 +16,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import dev.bidzz.opencode.OpenCodeApplication
+import dev.bidzz.opencode.core.design.GlassBackground
 import dev.bidzz.opencode.core.design.OpenCodeTheme
 import dev.bidzz.opencode.core.engine.EngineState
 import dev.bidzz.opencode.ui.about.AboutScreen
@@ -37,6 +38,7 @@ import dev.bidzz.opencode.ui.sessions.SessionListScreen
 import dev.bidzz.opencode.ui.sessions.SessionListViewModel
 import dev.bidzz.opencode.ui.sessions.SessionRow
 import dev.bidzz.opencode.ui.settings.SettingsScreen
+import dev.bidzz.opencode.ui.terminal.TerminalScreen
 import java.io.File
 
 /**
@@ -58,6 +60,7 @@ internal sealed interface Screen {
     data object Providers : Screen
     data object Diagnostics : Screen
     data object About : Screen
+    data object Terminal : Screen
 }
 
 /**
@@ -165,6 +168,7 @@ fun OpenCodeApp(app: OpenCodeApplication) {
         LocalAppContext provides localized,
     ) {
     OpenCodeTheme {
+      GlassBackground {
         when (screen) {
             Screen.Chat -> ChatScreen(
                 state = chatState,
@@ -183,6 +187,7 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 onProjectClick = { screen = Screen.Projects },
                 onFilesClick = { screen = Screen.Files },
                 onSettingsClick = { screen = Screen.Settings },
+                onTerminalClick = { screen = Screen.Terminal },
             )
 
             Screen.Files -> ExplorerScreen(
@@ -289,7 +294,12 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 app = app,
                 onBack = { screen = Screen.Chat },
             )
+
+            Screen.Terminal -> TerminalScreen(
+                onBack = { screen = Screen.Chat },
+            )
         }
+      }
     }
     }
 }

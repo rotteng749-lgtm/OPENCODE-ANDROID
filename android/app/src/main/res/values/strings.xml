@@ -84,6 +84,22 @@
     <string name="drawer_no_sessions">No sessions yet</string>
     <string name="drawer_untitled">Untitled</string>
     <string name="drawer_all_sessions">All sessions</string>
+
+    <!-- Terminal screen -->
+    <string name="terminal_title">Terminal</string>
+    <string name="terminal_new_session">New session</string>
+    <string name="terminal_close_session">Close session</string>
+    <string name="terminal_rename_session">Rename</string>
+    <string name="terminal_copy">Copy</string>
+    <string name="terminal_paste">Paste</string>
+    <string name="terminal_extra_keys">Extra keys</string>
+    <string name="terminal_bootstrap_title">Installing Termux userland</string>
+    <string name="terminal_bootstrap_body">Downloading the base package set (~30 MB)…</string>
+    <string name="terminal_bootstrap_error">Could not install the Termux userland. Tap to retry.</string>
+    <string name="terminal_fallback_title">Fallback shell</string>
+    <string name="terminal_fallback_body">The full Termux userland is not available. You are using the device system shell.</string>
+    <string name="terminal_session_unnamed">Session %1$d</string>
+
     <string name="composer_not_ready">Engine is not ready</string>
     <string name="composer_busy">Agent is working…</string>
     <string name="composer_hint">Ask anything about this project</string>

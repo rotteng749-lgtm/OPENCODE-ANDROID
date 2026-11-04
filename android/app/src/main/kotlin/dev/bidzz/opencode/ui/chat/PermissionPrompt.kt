@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import dev.bidzz.opencode.R
 import dev.bidzz.opencode.core.api.dto.PendingPermission
+import dev.bidzz.opencode.core.design.GlassSurface
 import dev.bidzz.opencode.core.design.OpenCodeTheme
 import dev.bidzz.opencode.core.design.OpenCodeTypography
 
@@ -45,12 +46,14 @@ fun PermissionPrompt(
     val spacing = OpenCodeTheme.tokens.spacing
     val radius = OpenCodeTheme.tokens.radius
 
+    GlassSurface(
+        modifier = modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(radius.lg),
+        tint = colors.warning.copy(alpha = 0.10f),
+        elevation = 18.dp,
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(spacing.md),
+    ) {
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .background(colors.surfaceRaised)
-            .border(0.5.dp, colors.outline, RoundedCornerShape(radius.lg))
-            .padding(spacing.md),
         verticalArrangement = Arrangement.spacedBy(spacing.sm),
     ) {
         Text(
@@ -101,6 +104,7 @@ fun PermissionPrompt(
                 modifier = Modifier.weight(1f),
             )
         }
+    }
     }
 }
 

@@ -8,7 +8,9 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        minSdk = 29
+        // Keep in sync with :app. The Termux userland must run from writable app
+        // storage, which Android 10+ blocks for targetSdk/minSdk >= 29.
+        minSdk = 28
     }
 
     compileOptions {

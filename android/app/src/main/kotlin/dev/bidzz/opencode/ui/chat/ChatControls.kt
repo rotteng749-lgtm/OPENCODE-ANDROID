@@ -27,6 +27,7 @@ import dev.bidzz.opencode.core.api.dto.AgentInfo
 import dev.bidzz.opencode.core.api.dto.CommandInfo
 import dev.bidzz.opencode.core.api.dto.ModelInfo
 import dev.bidzz.opencode.core.api.dto.ModelRef
+import dev.bidzz.opencode.core.design.GlassSurface
 import dev.bidzz.opencode.core.design.OpenCodeTheme
 import dev.bidzz.opencode.core.design.OpenCodeTypography
 import dev.bidzz.opencode.ui.Glyph
@@ -158,13 +159,13 @@ fun CommandSuggestions(
     val spacing = OpenCodeTheme.tokens.spacing
     val radius = OpenCodeTheme.tokens.radius
 
-    Column(
-        modifier = modifier
-            .padding(horizontal = spacing.md, vertical = spacing.xs)
-            .clip(RoundedCornerShape(radius.md))
-            .background(colors.surfaceRaised)
-            .border(0.5.dp, colors.outline, RoundedCornerShape(radius.md)),
+    GlassSurface(
+        modifier = modifier.padding(horizontal = spacing.md, vertical = spacing.xs),
+        shape = RoundedCornerShape(radius.md),
+        tint = colors.surfaceRaised,
+        elevation = 14.dp,
     ) {
+    Column {
         matches.take(6).forEach { command ->
             val description = command.description
             Row(
@@ -192,5 +193,6 @@ fun CommandSuggestions(
                 }
             }
         }
+    }
     }
 }

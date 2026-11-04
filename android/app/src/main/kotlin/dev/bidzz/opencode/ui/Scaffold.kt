@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -60,13 +61,17 @@ fun ScreenScaffold(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.background)
+            .background(Color.Transparent)
             .statusBarsPadding(),
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.surface)
+                .background(
+                    Brush.verticalGradient(
+                        listOf(colors.surfaceRaised, colors.surface),
+                    ),
+                )
                 .height(56.dp)
                 .padding(horizontal = spacing.xs),
             verticalAlignment = Alignment.CenterVertically,
@@ -101,8 +106,12 @@ fun ScreenScaffold(
         Box(
             Modifier
                 .fillMaxWidth()
-                .height(0.5.dp)
-                .background(colors.outline),
+                .height(1.dp)
+                .background(
+                    Brush.horizontalGradient(
+                        listOf(Color.Transparent, colors.accent.copy(alpha = 0.45f), colors.outline, Color.Transparent),
+                    ),
+                ),
         )
 
         Column(
@@ -121,15 +130,18 @@ fun ScreenScaffold(
 fun IconAction(glyph: Glyph, description: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = OpenCodeTheme.colors
 
-    Box(
+    dev.bidzz.opencode.core.design.GlassSurface(
         modifier = modifier
-            .size(48.dp)
-            .clip(CircleShape)
-            .semantics { contentDescription = description }
-            .clickable(role = Role.Button, onClick = onClick),
-        contentAlignment = Alignment.Center,
+            .size(44.dp)
+            .semantics { contentDescription = description },
+        shape = CircleShape,
+        tint = colors.surface,
+        elevation = 6.dp,
+        onClick = onClick,
     ) {
-        GlyphIcon(glyph, tint = colors.onSurface, size = 22.dp)
+        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            GlyphIcon(glyph, tint = colors.onSurface, size = 21.dp)
+        }
     }
 }
 
@@ -141,8 +153,9 @@ fun TextAction(label: String, onClick: () -> Unit, modifier: Modifier = Modifier
 
     Box(
         modifier = modifier
-            .defaultMinSize(minWidth = 48.dp, minHeight = 48.dp)
-            .clip(RoundedCornerShape(OpenCodeTheme.tokens.radius.md))
+            .defaultMinSize(minWidth = 48.dp, minHeight = 44.dp)
+            .clip(RoundedCornerShape(999.dp))
+            .background(if (enabled) colors.accent.copy(alpha = 0.14f) else Color.Transparent)
             .clickable(enabled = enabled, role = Role.Button, onClick = onClick)
             .padding(horizontal = spacing.md),
         contentAlignment = Alignment.Center,

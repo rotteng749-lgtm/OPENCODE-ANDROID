@@ -44,6 +44,14 @@ data class OpenCodeColors(
     val syntaxString: Color,
     val syntaxNumber: Color,
     val syntaxComment: Color,
+
+    /** Secondary brand colours. Decorative only: never used as a control colour. */
+    val accentSecondary: Color,
+    val accentTertiary: Color,
+    /** Mesh colours painted behind every screen. */
+    val glowA: Color,
+    val glowB: Color,
+    val glowC: Color,
 ) {
     /** Text colour for a status role. */
     fun statusColor(status: Status): Color = when (status) {
@@ -79,6 +87,11 @@ private val DarkColors = OpenCodeColors(
     syntaxString = Palette.darkSyntaxString,
     syntaxNumber = Palette.darkSyntaxNumber,
     syntaxComment = Palette.darkSyntaxComment,
+    accentSecondary = Palette.cyan,
+    accentTertiary = Palette.violet,
+    glowA = Palette.electricLime,
+    glowB = Palette.cyan,
+    glowC = Palette.violet,
 )
 
 private val LightColors = OpenCodeColors(
@@ -103,6 +116,11 @@ private val LightColors = OpenCodeColors(
     syntaxString = Palette.lightSyntaxString,
     syntaxNumber = Palette.lightSyntaxNumber,
     syntaxComment = Palette.lightSyntaxComment,
+    accentSecondary = Color(0xFF0F766E),
+    accentTertiary = Color(0xFF6D28D9),
+    glowA = Color(0xFFB8FF3D),
+    glowB = Color(0xFF99F6E4),
+    glowC = Color(0xFFDDD6FE),
 )
 
 private val LocalColors = staticCompositionLocalOf { DarkColors }

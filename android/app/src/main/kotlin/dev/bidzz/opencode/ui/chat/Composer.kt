@@ -25,6 +25,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import dev.bidzz.opencode.R
+import dev.bidzz.opencode.core.design.GlassSurface
 import dev.bidzz.opencode.core.design.OpenCodeTheme
 import dev.bidzz.opencode.core.design.OpenCodeTypography
 import dev.bidzz.opencode.ui.Glyph
@@ -59,12 +60,16 @@ fun Composer(
     val canSend = enabled && value.isNotBlank() && !busy
     val shape = RoundedCornerShape(24.dp)
 
-    Column(
+    GlassSurface(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = spacing.md, vertical = spacing.sm)
-            .background(colors.surface, shape)
-            .border(0.5.dp, colors.outline, shape)
+            .padding(horizontal = spacing.md, vertical = spacing.sm),
+        shape = shape,
+        tint = colors.surfaceRaised,
+        elevation = 20.dp,
+    ) {
+    Column(
+        modifier = Modifier
             .padding(start = spacing.lg, end = spacing.sm, top = spacing.md, bottom = spacing.sm),
     ) {
         // `decorationBox` rather than a sibling Text: the field itself must own the
@@ -115,6 +120,7 @@ fun Composer(
             )
         }
     }
+    }
 }
 
 @Composable
@@ -125,10 +131,10 @@ private fun ActionButton(busy: Boolean, canSend: Boolean, onClick: () -> Unit) {
 
     Box(
         modifier = Modifier
-            .size(36.dp)
+            .size(40.dp)
             .clip(CircleShape)
-            // The strongest neutral of the theme: near-black on light, near-white on dark.
-            .background(if (active) colors.onSurface else colors.surfaceSunken)
+            .background(if (active) colors.accent else colors.surfaceSunken)
+            .border(1.dp, if (active) colors.accent.copy(alpha = 0.7f) else colors.outline, CircleShape)
             .semantics { contentDescription = label }
             .clickable(enabled = active, role = Role.Button, onClick = onClick),
         contentAlignment = Alignment.Center,
@@ -138,12 +144,12 @@ private fun ActionButton(busy: Boolean, canSend: Boolean, onClick: () -> Unit) {
             Box(
                 Modifier
                     .size(11.dp)
-                    .background(colors.background, RoundedCornerShape(2.dp)),
+                    .background(colors.onAccent, RoundedCornerShape(2.dp)),
             )
         } else {
             GlyphIcon(
                 glyph = Glyph.ArrowUp,
-                tint = if (canSend) colors.background else colors.onSurfaceFaint,
+                tint = if (active) colors.onAccent else colors.onSurfaceFaint,
                 size = 20.dp,
             )
         }
