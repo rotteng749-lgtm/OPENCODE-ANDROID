@@ -73,6 +73,13 @@ class ChatViewModel(
     /** Direct-API fallback config; when non-null and the engine never resolves, the
      *  ViewModel talks straight to the provider instead of the engine. */
     private val directStore: dev.bidzz.opencode.engine.DirectProviderStore? = null,
+    /** Optional 9Router-style multi-provider router. When set, direct-API chat goes
+     *  through the router instead of a single provider. */
+    private val router: dev.bidzz.opencode.router.AiRouter? = null,
+    /** Skill manager for auto-activating skills based on the user query. */
+    private val skillManager: dev.bidzz.opencode.skills.SkillManager? = null,
+    /** Plugin manager for slash commands. */
+    private val pluginManager: dev.bidzz.opencode.plugins.ClaudePluginManager? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ChatUiState())
@@ -89,7 +96,7 @@ class ChatViewModel(
 
     /** True when the engine binary is absent and a provider is configured. */
     val directModeAvailable: Boolean
-        get() = directStore?.hasUsableProvider() == true
+        get() = directStore?.hasUsableProvider() == true || router != null
 
     /** Conversation history for direct mode (kept locally; engine owns it otherwise). */
     private val directHistory = mutableListOf<dev.bidzz.opencode.engine.DirectApiChat.ChatMessage>()
@@ -101,6 +108,9 @@ class ChatViewModel(
     var directSystemPrompt: String
         get() = directStore?.systemPrompt ?: ""
         set(value) { directStore?.systemPrompt = value }
+
+    /** Currently selected routing combo. */
+    var activeCombo: String = "Auto"
 
     /** Called by the screen whenever engine status changes. */
     fun onEngineStatus(status: EngineStatus) {
@@ -269,23 +279,25 @@ class ChatViewModel(
     }
 
     /**
-     * Sends a message straight to the configured provider, bypassing the engine.
-     *
-     * History is kept locally because there is no engine session to persist it.
-     * The system prompt is injected on every request — providers are stateless.
+     * Sends a message straight to a provider or through the AI router, bypassing
+     * the engine. Activates matching skills and slash commands from plugins.
      */
     private fun sendDirect(text: String) {
+        // Plugin slash command handling
+        val enrichedText = if (text.startsWith("/")) {
+            val name = text.substring(1).substringBefore(' ')
+            val args = text.substringAfter(' ', "").trim()
+            pluginManager?.applyCommand(commandName = name, args = args)
+                ?.replace("{{topic}}", args)
+                ?.let { text + "\n\n[System note: " + it + "]" } ?: text
+        } else text
+
+        // Auto-activate skills based on the user query
+        val skillInstructions = skillManager?.activate(text)
         val store = directStore ?: return
-        val provider = store.activeProvider() ?: run {
-            _state.value = _state.value.copy(failureKey = R.string.error_engine_not_running)
-            return
-        }
-        val model = store.activeModel(provider)
-        val apiKey = store.apiKey(provider.id)
 
         sendInFlight = true
-        // Optimistic UI: user bubble appears immediately, assistant streams below it.
-        directHistory.add(dev.bidzz.opencode.engine.DirectApiChat.ChatMessage("user", text))
+        directHistory.add(dev.bidzz.opencode.engine.DirectApiChat.ChatMessage("user", enrichedText))
         val userMsg = ChatMessage(id = UUID.randomUUID().toString(), role = Role.USER, text = text)
         val assistantId = UUID.randomUUID().toString()
         _state.value = _state.value.copy(
@@ -298,18 +310,40 @@ class ChatViewModel(
         )
 
         val snapshot = directHistory.toList()
-        val sysPrompt = store.systemPrompt
+        var sysPrompt = store.systemPrompt
+        if (!skillInstructions.isNullOrBlank()) {
+            sysPrompt = "$sysPrompt\n\n$skillInstructions"
+        }
+
         directJob?.cancel()
         directJob = viewModelScope.launch {
             try {
+                val flow = if (router != null) {
+                    router.route(activeCombo, snapshot, sysPrompt)
+                } else {
+                    val provider = store.activeProvider() ?: run {
+                        _state.value = _state.value.copy(
+                            busy = false,
+                            failureKey = R.string.error_engine_not_running,
+                            messages = _state.value.messages.map {
+                                if (it.id == assistantId) it.copy(streaming = false) else it
+                            },
+                        )
+                        sendInFlight = false
+                        return@launch
+                    }
+                    val model = store.activeModel(provider)
+                    directChat.streamChat(
+                        baseUrl = provider.baseUrl,
+                        apiKey = store.apiKey(provider.id),
+                        model = model.id,
+                        messages = snapshot,
+                        systemPrompt = sysPrompt,
+                    )
+                }
+
                 val full = StringBuilder()
-                directChat.streamChat(
-                    baseUrl = provider.baseUrl,
-                    apiKey = apiKey,
-                    model = model.id,
-                    messages = snapshot,
-                    systemPrompt = sysPrompt,
-                ).collect { event ->
+                flow.collect { event ->
                     when (event) {
                         is dev.bidzz.opencode.engine.DirectApiChat.StreamEvent.Delta -> {
                             full.append(event.text)

@@ -67,6 +67,7 @@ fun SettingsScreen(
     onProjects: () -> Unit,
     onProviders: () -> Unit,
     onDirectProviders: () -> Unit,
+    onLabs: () -> Unit,
     onAbout: () -> Unit,
 ) {
     val colors = OpenCodeTheme.colors
@@ -131,6 +132,15 @@ fun SettingsScreen(
                 )
             }
 
+            Section(title = "LABS") {
+                SettingsRow(
+                    glyph = Glyph.Terminal,
+                    title = "Experimental features",
+                    subtitle = "MCP, AI router, plugins, skills, root tools",
+                    onClick = onLabs,
+                )
+            }
+
             Section(R.string.settings_section_engine) {
                 SettingsRow(
                     glyph = Glyph.Terminal,
@@ -166,11 +176,21 @@ fun SettingsScreen(
 /** A titled group: small label above, rows inside one rounded card. */
 @Composable
 private fun Section(titleRes: Int, content: @Composable ColumnScope.() -> Unit) {
+    SectionImpl(stringResource(titleRes), content)
+}
+
+@Composable
+private fun Section(title: String, content: @Composable ColumnScope.() -> Unit) {
+    SectionImpl(title, content)
+}
+
+@Composable
+private fun SectionImpl(title: String, content: @Composable ColumnScope.() -> Unit) {
     val colors = OpenCodeTheme.colors
     val spacing = OpenCodeTheme.tokens.spacing
 
     Text(
-        text = stringResource(titleRes).uppercase(),
+        text = title.uppercase(),
         style = OpenCodeTypography.label,
         color = colors.onSurfaceFaint,
         modifier = Modifier.padding(start = spacing.xs, top = spacing.xl, bottom = spacing.sm),

@@ -59,6 +59,7 @@ internal sealed interface Screen {
     data object Settings : Screen
     data object Providers : Screen
     data object DirectProviders : Screen
+    data object Labs : Screen
     data object Diagnostics : Screen
     data object About : Screen
     data object Terminal : Screen
@@ -74,7 +75,7 @@ internal sealed interface Screen {
 internal fun Screen.parent(): Screen = when (this) {
     is Screen.FileView, Screen.DiffList -> Screen.Files
     is Screen.Diff -> Screen.DiffList
-    Screen.Providers, Screen.About, Screen.DirectProviders -> Screen.Settings
+    Screen.Providers, Screen.About, Screen.DirectProviders, Screen.Labs -> Screen.Settings
     else -> Screen.Chat
 }
 
@@ -90,6 +91,9 @@ fun OpenCodeApp(app: OpenCodeApplication) {
             app.engineApi,
             { app.workspaceStore.resolve().absolutePath },
             app.directProviderStore,
+            app.aiRouter,
+            app.skillManager,
+            app.pluginManager,
         )
     })
 
@@ -275,6 +279,7 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 onProjects = { screen = Screen.Projects },
                 onProviders = { screen = Screen.Providers },
                 onDirectProviders = { screen = Screen.DirectProviders },
+                onLabs = { screen = Screen.Labs },
                 onAbout = { screen = Screen.About },
             )
 
@@ -308,6 +313,11 @@ fun OpenCodeApp(app: OpenCodeApplication) {
 
             Screen.Terminal -> TerminalScreen(
                 onBack = { screen = Screen.Chat },
+            )
+
+            Screen.Labs -> dev.bidzz.opencode.ui.labs.LabsScreen(
+                app = app,
+                onBack = { screen = Screen.Settings },
             )
         }
       }

@@ -16,6 +16,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   When the engine binary is missing, chat streams directly from the provider.
 - System prompt editor in Settings → Free providers; applied to every direct-API
   request.
+- 9Router-style AI router with combos (Auto/Fast/Smart), fallback, round-robin,
+  and per-provider cooldown on 401/429.
+- MCP server registry with 9 servers (filesystem, memory, sequential-thinking,
+  fetch, time, git, puppeteer, sqlite, everything) and stdio JSON-RPC client.
+- Claude plugin manager: registry, install from GitHub/JSON, slash commands in chat.
+- Skill manager: built-in + GitHub SKILL.md + manual markdown, auto-activates by trigger.
+- Root shell executor (su) with package manager, file access, process tools.
+- Browser/app automation via root: UI Automator dump, tap, swipe, screenshot.
+- Labs screen in Settings for MCP, plugins, skills, router, and root tools.
 - Real embedded Termux-style terminal with multiple sessions, PTY, proot, and bootstrap download.
 - Glassmorphic UI across all screens (dark/light, translucent panes, mesh background).
 - `terminal-emulator` and `terminal-view` modules vendored from Termux (Apache-2.0).

@@ -42,6 +42,22 @@ class OpenCodeApplication : Application() {
     lateinit var directProviderStore: dev.bidzz.opencode.engine.DirectProviderStore
         private set
 
+    /** 9Router-style multi-provider AI router. */
+    val aiRouter by lazy { dev.bidzz.opencode.router.AiRouter(this) }
+
+    /** MCP server manager. */
+    val mcpServerManager by lazy { dev.bidzz.opencode.mcp.McpServerManager(this) }
+
+    /** Claude plugin registry and installer. */
+    val pluginManager by lazy { dev.bidzz.opencode.plugins.ClaudePluginManager(this) }
+
+    /** Skill registry and installer. */
+    val skillManager by lazy { dev.bidzz.opencode.skills.SkillManager(this) }
+
+    /** Root shell and browser automation for rooted devices. */
+    val rootShell by lazy { dev.bidzz.opencode.root.RootShell() }
+    val browserAutomation by lazy { dev.bidzz.opencode.root.BrowserAutomation(this) }
+
     /**
      * The engine's directory layout. Exposed because the config file the app writes
      * lives inside it, and duplicating those paths here would let the two drift.
