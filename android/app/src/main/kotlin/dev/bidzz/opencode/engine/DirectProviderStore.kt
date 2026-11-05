@@ -23,6 +23,21 @@ class DirectProviderStore(context: Context) {
 
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
+    init {
+        // Migration: "opencode-zen" was renamed to "opencode" and moved to the
+        // inference endpoint. Carry the key/selection over.
+        val legacy = prefs.getString("${KEY_PREFIX_API_KEY}opencode-zen", null)
+        if (!legacy.isNullOrBlank() && apiKey("opencode").isBlank()) {
+            prefs.edit()
+                .putString("${KEY_PREFIX_API_KEY}opencode", legacy)
+                .putString(KEY_ACTIVE_PROVIDER, "opencode")
+                .apply()
+        }
+        if (prefs.getString(KEY_ACTIVE_PROVIDER, null) == "opencode-zen") {
+            prefs.edit().putString(KEY_ACTIVE_PROVIDER, "opencode").apply()
+        }
+    }
+
     /** Currently selected provider id (e.g. "openrouter"), or null. */
     var activeProviderId: String?
         get() = prefs.getString(KEY_ACTIVE_PROVIDER, null)

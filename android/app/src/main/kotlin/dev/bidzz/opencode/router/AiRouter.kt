@@ -56,6 +56,7 @@ class AiRouter(private val context: Context) {
             name = "Auto",
             routes = listOf(
                 Route("llm7", "mistral-Nemo-Instruct-2407", Tier.FREE),
+                Route("opencode", "deepseek-v4.1-flash-free", Tier.FREE),
                 Route("groq", "llama-3.3-70b-versatile", Tier.FREE),
                 Route("gemini", "gemini-2.0-flash", Tier.FREE),
                 Route("openrouter", "nvidia/nemotron-3-ultra-550b-a55b:free", Tier.FREE),
@@ -67,6 +68,7 @@ class AiRouter(private val context: Context) {
             routes = listOf(
                 Route("groq", "llama-3.1-8b-instant", Tier.FREE),
                 Route("llm7", "gpt-oss-20b", Tier.FREE),
+                Route("opencode", "nemotron-3.5-lightning-free", Tier.FREE),
                 Route("gemini", "gemini-2.0-flash-lite", Tier.FREE),
             ),
             strategy = Strategy.ROUND_ROBIN,
@@ -74,6 +76,7 @@ class AiRouter(private val context: Context) {
         Combo(
             name = "Smart",
             routes = listOf(
+                Route("opencode", "deepseek-v4.1-flash-free", Tier.FREE),
                 Route("openrouter", "nvidia/nemotron-3-ultra-550b-a55b:free", Tier.FREE),
                 Route("gemini", "gemini-2.0-flash", Tier.FREE),
                 Route("groq", "llama-3.3-70b-versatile", Tier.FREE),

@@ -8,12 +8,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-11-04
 
 ### Added
-- Direct-API fallback chat with 26 free providers and 70+ models (OpenRouter, Groq,
+- Direct-API fallback chat with 27 free providers and 90+ models (OpenCode, OpenRouter, Groq,
   Google Gemini, Mistral AI, LLM7.io, Kilo Code, Hugging Face, Z AI, Cerebras,
-  Cloudflare Workers AI, Cohere, OpenCode Zen, SiliconFlow, SambaNova, xAI,
+  Cloudflare Workers AI, Cohere, SiliconFlow, SambaNova, xAI,
   AI21 Labs, DeepSeek, Nscale, Nebius, ModelScope, OVHcloud AI, Aion Labs,
   Agnes AI, Alibaba Cloud, Chutes.ai, Glhf.chat) from awesome-freellm-apis.
   When the engine binary is missing, chat streams directly from the provider.
+- OpenCode provider (opencode.ai/inference/openai/v1) with its free models
+  (Big Pickle, DeepSeek V4.1 Flash Free, GLM-5.3 Flash Free, Nemotron free
+  variants, MiMo, Beam, Flint, Crouton, Pulse, Jev) and pay-as-you-go models.
 - System prompt editor in Settings → Free providers; applied to every direct-API
   request.
 - 9Router-style AI router with combos (Auto/Fast/Smart), fallback, round-robin,
