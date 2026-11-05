@@ -16,6 +16,7 @@ import dev.bidzz.opencode.core.api.dto.toToolCall
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.util.UUID
 
 /** What the chat screen renders. */
 data class ChatUiState(
@@ -69,6 +70,9 @@ data class ChatMessage(
 class ChatViewModel(
     private val api: EngineApi,
     private val workspace: () -> String,
+    /** Direct-API fallback config; when non-null and the engine never resolves, the
+     *  ViewModel talks straight to the provider instead of the engine. */
+    private val directStore: dev.bidzz.opencode.engine.DirectProviderStore? = null,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(ChatUiState())
@@ -81,12 +85,30 @@ class ChatViewModel(
     /** The attached handle, or null until the engine reports credentials. */
     private var handle: dev.bidzz.opencode.api.EngineApi.Handle? = null
 
+    // ---------- Direct-API mode (engine-less fallback) ----------
+
+    /** True when the engine binary is absent and a provider is configured. */
+    val directModeAvailable: Boolean
+        get() = directStore?.hasUsableProvider() == true
+
+    /** Conversation history for direct mode (kept locally; engine owns it otherwise). */
+    private val directHistory = mutableListOf<dev.bidzz.opencode.engine.DirectApiChat.ChatMessage>()
+
+    private val directChat = dev.bidzz.opencode.engine.DirectApiChat()
+    private var directJob: Job? = null
+
+    /** System prompt applied to the *next* direct session. */
+    var directSystemPrompt: String
+        get() = directStore?.systemPrompt ?: ""
+        set(value) { directStore?.systemPrompt = value }
+
     /** Called by the screen whenever engine status changes. */
     fun onEngineStatus(status: EngineStatus) {
         val previous = _state.value.engineState
+        val directReady = directStore?.hasUsableProvider() == true
         _state.value = _state.value.copy(
             engineState = status.state,
-            workspaceReady = status.credentials != null,
+            workspaceReady = status.credentials != null || (status.credentials == null && directReady),
         )
         if (status.state != previous) {
             when (status.state) {
@@ -224,15 +246,100 @@ class ChatViewModel(
         // cleared after the reply, so rapid taps would each start their own send. The
         // in-flight flag is set synchronously on the main thread to close that window.
         if (text.isEmpty() || _state.value.busy || sendInFlight) return
-        val repo = repository ?: run {
-            _state.value = _state.value.copy(failureKey = R.string.error_engine_not_running)
+
+        // Direct-API fallback: no engine handle, but a provider is configured.
+        if (repository == null) {
+            if (directModeAvailable) {
+                sendDirect(text)
+            } else {
+                _state.value = _state.value.copy(failureKey = R.string.error_engine_not_running)
+            }
             return
         }
+        val repo = repository ?: return
 
         sendInFlight = true
         viewModelScope.launch {
             try {
                 sendNow(repo, text)
+            } finally {
+                sendInFlight = false
+            }
+        }
+    }
+
+    /**
+     * Sends a message straight to the configured provider, bypassing the engine.
+     *
+     * History is kept locally because there is no engine session to persist it.
+     * The system prompt is injected on every request — providers are stateless.
+     */
+    private fun sendDirect(text: String) {
+        val store = directStore ?: return
+        val provider = store.activeProvider() ?: run {
+            _state.value = _state.value.copy(failureKey = R.string.error_engine_not_running)
+            return
+        }
+        val model = store.activeModel(provider)
+        val apiKey = store.apiKey(provider.id)
+
+        sendInFlight = true
+        // Optimistic UI: user bubble appears immediately, assistant streams below it.
+        directHistory.add(dev.bidzz.opencode.engine.DirectApiChat.ChatMessage("user", text))
+        val userMsg = ChatMessage(id = UUID.randomUUID().toString(), role = Role.USER, text = text)
+        val assistantId = UUID.randomUUID().toString()
+        _state.value = _state.value.copy(
+            draft = "",
+            busy = true,
+            failure = null,
+            failureKey = null,
+            messages = _state.value.messages + userMsg +
+                ChatMessage(id = assistantId, role = Role.ASSISTANT, text = "", streaming = true),
+        )
+
+        val snapshot = directHistory.toList()
+        val sysPrompt = store.systemPrompt
+        directJob?.cancel()
+        directJob = viewModelScope.launch {
+            try {
+                val full = StringBuilder()
+                directChat.streamChat(
+                    baseUrl = provider.baseUrl,
+                    apiKey = apiKey,
+                    model = model.id,
+                    messages = snapshot,
+                    systemPrompt = sysPrompt,
+                ).collect { event ->
+                    when (event) {
+                        is dev.bidzz.opencode.engine.DirectApiChat.StreamEvent.Delta -> {
+                            full.append(event.text)
+                            _state.value = _state.value.copy(
+                                messages = _state.value.messages.map {
+                                    if (it.id == assistantId) it.copy(text = full.toString(), streaming = true) else it
+                                },
+                            )
+                        }
+                        is dev.bidzz.opencode.engine.DirectApiChat.StreamEvent.Done -> {
+                            directHistory.add(
+                                dev.bidzz.opencode.engine.DirectApiChat.ChatMessage("assistant", event.fullText),
+                            )
+                            _state.value = _state.value.copy(
+                                busy = false,
+                                messages = _state.value.messages.map {
+                                    if (it.id == assistantId) it.copy(text = event.fullText, streaming = false) else it
+                                },
+                            )
+                        }
+                        is dev.bidzz.opencode.engine.DirectApiChat.StreamEvent.Error -> {
+                            _state.value = _state.value.copy(
+                                busy = false,
+                                messages = _state.value.messages.map {
+                                    if (it.id == assistantId) it.copy(text = event.message, role = Role.ERROR, streaming = false) else it
+                                },
+                            )
+                        }
+                    }
+                }
             } finally {
                 sendInFlight = false
             }
@@ -310,6 +417,15 @@ class ChatViewModel(
     }
 
     fun stop() {
+        directJob?.cancel()
+        if (_state.value.busy && repository == null) {
+            _state.value = _state.value.copy(
+                busy = false,
+                messages = _state.value.messages.map { if (it.streaming) it.copy(streaming = false) else it },
+            )
+            sendInFlight = false
+            return
+        }
         val repo = repository ?: return
         viewModelScope.launch {
             when (val result = repo.interrupt()) {
@@ -340,6 +456,8 @@ class ChatViewModel(
     fun newSession() {
         repository?.close()
         collector?.cancel()
+        directJob?.cancel()
+        directHistory.clear()
         val attached = handle
         if (attached != null) {
             val repo = ChatRepository(attached.sessions, attached.stream, viewModelScope)

@@ -38,6 +38,10 @@ class OpenCodeApplication : Application() {
     lateinit var workspaceStore: WorkspaceStore
         private set
 
+    /** Direct-API provider config (used when the engine binary is missing). */
+    lateinit var directProviderStore: dev.bidzz.opencode.engine.DirectProviderStore
+        private set
+
     /**
      * The engine's directory layout. Exposed because the config file the app writes
      * lives inside it, and duplicating those paths here would let the two drift.
@@ -81,6 +85,7 @@ class OpenCodeApplication : Application() {
 
         val nativeLibraryDir = File(applicationInfo.nativeLibraryDir)
         workspaceStore = WorkspaceStore(this)
+        directProviderStore = dev.bidzz.opencode.engine.DirectProviderStore(this)
         engineApi = dev.bidzz.opencode.api.EngineApi { workspaceStore.resolve().absolutePath }
 
         // The environment reads the workspace through this lambda on every access,

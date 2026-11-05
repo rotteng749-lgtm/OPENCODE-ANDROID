@@ -8,6 +8,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.2.0] - 2026-11-04
 
 ### Added
+- Direct-API fallback chat with 26 free providers and 70+ models (OpenRouter, Groq,
+  Google Gemini, Mistral AI, LLM7.io, Kilo Code, Hugging Face, Z AI, Cerebras,
+  Cloudflare Workers AI, Cohere, OpenCode Zen, SiliconFlow, SambaNova, xAI,
+  AI21 Labs, DeepSeek, Nscale, Nebius, ModelScope, OVHcloud AI, Aion Labs,
+  Agnes AI, Alibaba Cloud, Chutes.ai, Glhf.chat) from awesome-freellm-apis.
+  When the engine binary is missing, chat streams directly from the provider.
+- System prompt editor in Settings → Free providers; applied to every direct-API
+  request.
 - Real embedded Termux-style terminal with multiple sessions, PTY, proot, and bootstrap download.
 - Glassmorphic UI across all screens (dark/light, translucent panes, mesh background).
 - `terminal-emulator` and `terminal-view` modules vendored from Termux (Apache-2.0).

@@ -66,6 +66,7 @@ fun SettingsScreen(
     onDiagnostics: () -> Unit,
     onProjects: () -> Unit,
     onProviders: () -> Unit,
+    onDirectProviders: () -> Unit,
     onAbout: () -> Unit,
 ) {
     val colors = OpenCodeTheme.colors
@@ -120,6 +121,13 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_provider_title),
                     subtitle = stringResource(R.string.settings_provider_body),
                     onClick = onProviders,
+                )
+                SettingsRow(
+                    glyph = Glyph.Sliders,
+                    title = "Free providers & system prompt",
+                    subtitle = "Direct API fallback when the engine is unavailable",
+                    onClick = onDirectProviders,
+                    divider = true,
                 )
             }
 

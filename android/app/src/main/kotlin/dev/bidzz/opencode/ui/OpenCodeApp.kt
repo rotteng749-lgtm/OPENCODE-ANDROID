@@ -58,6 +58,7 @@ internal sealed interface Screen {
     data class Diff(val file: String) : Screen
     data object Settings : Screen
     data object Providers : Screen
+    data object DirectProviders : Screen
     data object Diagnostics : Screen
     data object About : Screen
     data object Terminal : Screen
@@ -73,7 +74,7 @@ internal sealed interface Screen {
 internal fun Screen.parent(): Screen = when (this) {
     is Screen.FileView, Screen.DiffList -> Screen.Files
     is Screen.Diff -> Screen.DiffList
-    Screen.Providers, Screen.About -> Screen.Settings
+    Screen.Providers, Screen.About, Screen.DirectProviders -> Screen.Settings
     else -> Screen.Chat
 }
 
@@ -85,7 +86,11 @@ fun OpenCodeApp(app: OpenCodeApplication) {
     val engineStatus by app.engineStatus.collectAsState()
 
     val chatViewModel: ChatViewModel = viewModel(factory = viewModelFactory {
-        ChatViewModel(app.engineApi, { app.workspaceStore.resolve().absolutePath })
+        ChatViewModel(
+            app.engineApi,
+            { app.workspaceStore.resolve().absolutePath },
+            app.directProviderStore,
+        )
     })
 
     val sessionViewModel: SessionListViewModel = viewModel(factory = viewModelFactory {
@@ -269,6 +274,7 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 onDiagnostics = { screen = Screen.Diagnostics },
                 onProjects = { screen = Screen.Projects },
                 onProviders = { screen = Screen.Providers },
+                onDirectProviders = { screen = Screen.DirectProviders },
                 onAbout = { screen = Screen.About },
             )
 
@@ -288,6 +294,11 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 onSaveCustom = providersViewModel::saveCustomProvider,
                 onDeleteCredential = providersViewModel::deleteCredential,
                 onReplaceCredential = providersViewModel::replaceCredential,
+            )
+
+            Screen.DirectProviders -> dev.bidzz.opencode.ui.settings.DirectProviderScreen(
+                app = app,
+                onBack = { screen = Screen.Settings },
             )
 
             Screen.Diagnostics -> DiagnosticsScreen(
