@@ -26,10 +26,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   per-card backdrop blur.
 
 ### Fixed
-- None.
+- `TerminalSessionManager.ensureReady()` fast-path now emits `State.Installed` so
+  the progress panel dismisses when the bootstrap is already present.
+- `TerminalSessionManager.createSession()` creates `files/home` before starting
+  `proot` so the `can't chdir` warning is gone.
+- Validated on a Samsung A15 (Android 16, arm64-v8a) over adb: bootstrap
+  downloads, extracts, proot + bash run, and `uname -a` prints inside the
+  Termux userland.
 
 ### Known issues
-- No runtime emulator validation was possible in the build environment.
 - The extra-keys bar does not latch `CTRL`/`ALT` modifiers yet.
 - Engine binaries are not built in this environment, so AI chat requires a
   release built with the engine artifacts present.

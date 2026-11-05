@@ -184,6 +184,7 @@ class TerminalSessionManager(
      */
     suspend fun ensureReady(force: Boolean = false) {
         if (installer.isInstalled() && !force) {
+            _installState.value = TerminalInstaller.State.Installed
             if (sessions.isEmpty()) createSession(File(context.filesDir, "usr"))
             return
         }
@@ -202,6 +203,10 @@ class TerminalSessionManager(
             buildProotArgs(context.filesDir)
         }
         val shell = if (fallback) "/system/bin/sh" else prootBinary().absolutePath
+
+        // proot's -w flag points at the *guest* path, so the home directory must
+        // exist inside the bind-mounted filesDir before the session starts.
+        File(context.filesDir, "home").mkdirs()
 
         val client = CompositeTerminalClient()
         val session = TerminalSession(

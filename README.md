@@ -151,6 +151,8 @@ Android 15+ devices with 16 KB memory pages work: every bundled binary is 16 KB 
   each shell runs inside `proot` so binaries that hardcode `/data/data/com.termux` still work.
   `minSdk` and `targetSdk` are both 28 because Android 10+ blocks `execve` from writable app
   storage for `targetSdk >= 29`; this is the same reason Termux itself pins 28.
+  **Device-tested on Samsung A15 (Android 16, arm64-v8a): bootstrap downloads, extracts,
+  proot + bash run, and `uname`/`pkg` work inside the terminal.**
 - **UI.** Plain Compose with its own small design system (`core:design`) and hand-drawn icons.
   No navigation library and no icon pack.
 
