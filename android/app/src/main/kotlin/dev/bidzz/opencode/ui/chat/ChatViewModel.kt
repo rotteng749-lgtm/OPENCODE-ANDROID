@@ -42,6 +42,8 @@ data class ChatUiState(
     val activeModel: dev.bidzz.opencode.core.api.dto.ModelRef? = null,
     /** Slash commands offered by the engine and the project's `commands/` folder. */
     val commands: List<dev.bidzz.opencode.core.api.dto.CommandInfo> = emptyList(),
+    /** Label for the direct-mode model chip ("Auto", "LLM7.io · Mistral Nemo"). */
+    val modelLabel: String? = null,
 )
 
 /** A single rendered message. */
@@ -110,7 +112,49 @@ class ChatViewModel(
         set(value) { directStore?.systemPrompt = value }
 
     /** Currently selected routing combo. */
-    var activeCombo: String = "Auto"
+    var activeCombo: String = directStore?.activeCombo ?: "Auto"
+
+    init {
+        refreshModelLabel()
+    }
+
+    /** Human label for the chat model chip. */
+    private fun currentModelLabel(): String? {
+        val store = directStore ?: return null
+        if (store.routerEnabled) return activeCombo
+        val provider = store.activeProvider() ?: return "Pilih model"
+        return "${provider.name} · ${store.activeModel(provider).name}"
+    }
+
+    private fun refreshModelLabel() {
+        _state.value = _state.value.copy(modelLabel = currentModelLabel())
+    }
+
+    /** Re-reads the selection from storage (e.g. after the settings screen changed it). */
+    fun refreshModelSelection() {
+        activeCombo = directStore?.activeCombo ?: activeCombo
+        refreshModelLabel()
+    }
+
+    /** Switches direct mode to a routing combo (Auto/Fast/Smart). */
+    fun selectCombo(name: String) {
+        activeCombo = name
+        directStore?.let {
+            it.activeCombo = name
+            it.routerEnabled = true
+        }
+        refreshModelLabel()
+    }
+
+    /** Pins direct mode to one provider + model, bypassing the router. */
+    fun selectProviderModel(providerId: String, modelId: String) {
+        directStore?.let {
+            it.activeProviderId = providerId
+            it.activeModelId = modelId
+            it.routerEnabled = false
+        }
+        refreshModelLabel()
+    }
 
     /** Called by the screen whenever engine status changes. */
     fun onEngineStatus(status: EngineStatus) {
@@ -318,7 +362,7 @@ class ChatViewModel(
         directJob?.cancel()
         directJob = viewModelScope.launch {
             try {
-                val flow = if (router != null) {
+                val flow = if (router != null && store.routerEnabled) {
                     router.route(activeCombo, snapshot, sysPrompt)
                 } else {
                     val provider = store.activeProvider() ?: run {

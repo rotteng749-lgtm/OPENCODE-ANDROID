@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Root shell executor (su) with package manager, file access, process tools.
 - Browser/app automation via root: UI Automator dump, tap, swipe, screenshot.
 - Labs screen in Settings for MCP, plugins, skills, router, and root tools.
+- ChatGPT-style model picker in the chat composer: routing combos (Auto/Fast/Smart)
+  or a fixed provider + model, persisted across restarts.
 - Real embedded Termux-style terminal with multiple sessions, PTY, proot, and bootstrap download.
 - Glassmorphic UI across all screens (dark/light, translucent panes, mesh background).
 - `terminal-emulator` and `terminal-view` modules vendored from Termux (Apache-2.0).

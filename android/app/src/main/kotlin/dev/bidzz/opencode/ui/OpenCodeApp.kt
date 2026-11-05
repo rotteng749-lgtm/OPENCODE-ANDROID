@@ -83,6 +83,7 @@ internal fun Screen.parent(): Screen = when (this) {
 fun OpenCodeApp(app: OpenCodeApplication) {
     var screen by remember { mutableStateOf<Screen>(Screen.Chat) }
     var sessionScopeToProject by remember { mutableStateOf(true) }
+    var showModelPicker by remember { mutableStateOf(false) }
 
     val engineStatus by app.engineStatus.collectAsState()
 
@@ -197,6 +198,10 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 onFilesClick = { screen = Screen.Files },
                 onSettingsClick = { screen = Screen.Settings },
                 onTerminalClick = { screen = Screen.Terminal },
+                onModelPickerClick = {
+                    chatViewModel.refreshModelSelection()
+                    showModelPicker = true
+                },
             )
 
             Screen.Files -> ExplorerScreen(
@@ -320,6 +325,21 @@ fun OpenCodeApp(app: OpenCodeApplication) {
                 onBack = { screen = Screen.Settings },
             )
         }
+      }
+      if (showModelPicker && screen == Screen.Chat) {
+          dev.bidzz.opencode.ui.chat.ModelPickerSheet(
+              app = app,
+              activeCombo = chatState.modelLabel ?: chatViewModel.activeCombo,
+              onPickCombo = { name ->
+                  chatViewModel.selectCombo(name)
+                  showModelPicker = false
+              },
+              onPickModel = { providerId, modelId ->
+                  chatViewModel.selectProviderModel(providerId, modelId)
+                  showModelPicker = false
+              },
+              onDismiss = { showModelPicker = false },
+          )
       }
     }
     }

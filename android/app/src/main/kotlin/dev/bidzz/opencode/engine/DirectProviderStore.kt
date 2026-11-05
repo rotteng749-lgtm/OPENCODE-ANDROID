@@ -17,6 +17,8 @@ class DirectProviderStore(context: Context) {
         private const val KEY_ACTIVE_MODEL = "active_model"
         private const val KEY_SYSTEM_PROMPT = "system_prompt"
         private const val KEY_PREFIX_API_KEY = "apikey_"
+        private const val KEY_ROUTER_ENABLED = "router_enabled"
+        private const val KEY_ACTIVE_COMBO = "active_combo"
     }
 
     private val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
@@ -49,6 +51,16 @@ class DirectProviderStore(context: Context) {
     var systemPrompt: String
         get() = prefs.getString(KEY_SYSTEM_PROMPT, DEFAULT_SYSTEM_PROMPT) ?: DEFAULT_SYSTEM_PROMPT
         set(value) = prefs.edit().putString(KEY_SYSTEM_PROMPT, value).apply()
+
+    /** Whether direct-API chat goes through the AI router (combo) or a fixed model. */
+    var routerEnabled: Boolean
+        get() = prefs.getBoolean(KEY_ROUTER_ENABLED, true)
+        set(value) = prefs.edit().putBoolean(KEY_ROUTER_ENABLED, value).apply()
+
+    /** Selected routing combo name (Auto/Fast/Smart). */
+    var activeCombo: String
+        get() = prefs.getString(KEY_ACTIVE_COMBO, "Auto") ?: "Auto"
+        set(value) = prefs.edit().putString(KEY_ACTIVE_COMBO, value).apply()
 
     /** Provider ids the user has configured a key for (or that need none). */
     fun configuredProviders(): List<FreeProvider> =

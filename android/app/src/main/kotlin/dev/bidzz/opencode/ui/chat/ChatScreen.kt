@@ -83,6 +83,7 @@ fun ChatScreen(
     onFilesClick: () -> Unit,
     onSettingsClick: () -> Unit,
     onTerminalClick: () -> Unit,
+    onModelPickerClick: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val colors = OpenCodeTheme.colors
@@ -247,6 +248,8 @@ fun ChatScreen(
                         activeModel = state.activeModel,
                         onAgent = onAgent,
                         onModel = onModel,
+                        directLabel = state.modelLabel,
+                        onDirectPicker = onModelPickerClick.takeIf { state.modelLabel != null },
                     )
                 },
             )

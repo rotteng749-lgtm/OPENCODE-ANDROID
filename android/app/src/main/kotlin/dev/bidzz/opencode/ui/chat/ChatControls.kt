@@ -49,8 +49,12 @@ fun ChatControls(
     onAgent: (String) -> Unit,
     onModel: (ModelRef) -> Unit,
     modifier: Modifier = Modifier,
+    /** Direct-mode label ("Auto", "LLM7.io · Mistral Nemo"). */
+    directLabel: String? = null,
+    /** Opens the full model picker sheet. */
+    onDirectPicker: (() -> Unit)? = null,
 ) {
-    if (agents.isEmpty() && models.isEmpty()) return
+    if (agents.isEmpty() && models.isEmpty() && directLabel == null) return
 
     val spacing = OpenCodeTheme.tokens.spacing
 
@@ -77,6 +81,38 @@ fun ChatControls(
                 onSelect = { id -> models.firstOrNull { it.ref().id == id }?.let { onModel(it.ref()) } },
             )
         }
+        // Direct-API mode: no engine catalog, so the chip opens the provider sheet.
+        if (directLabel != null && onDirectPicker != null) {
+            ActionChip(label = directLabel, onClick = onDirectPicker)
+        }
+    }
+}
+
+/** A chip that opens a screen/sheet rather than an inline dropdown. */
+@Composable
+private fun ActionChip(label: String, onClick: () -> Unit) {
+    val colors = OpenCodeTheme.colors
+    val radius = OpenCodeTheme.tokens.radius
+    val spacing = OpenCodeTheme.tokens.spacing
+
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(radius.full))
+            .border(0.5.dp, colors.outline, RoundedCornerShape(radius.full))
+            .clickable(onClick = onClick)
+            .padding(start = spacing.md, end = spacing.sm, top = spacing.xs, bottom = spacing.xs),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(spacing.xs),
+    ) {
+        Text(
+            text = label,
+            style = OpenCodeTypography.label,
+            color = colors.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.widthIn(max = 180.dp),
+        )
+        GlyphIcon(Glyph.ChevronDown, tint = colors.onSurfaceMuted, size = 14.dp)
     }
 }
 

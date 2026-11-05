@@ -42,6 +42,7 @@
 - [ ] Fusion mode (parallel + judge)
 - [ ] Token savers (compression, prompt bias)
 - [x] UI: Router combo editor
+- [x] Chat model picker: combos + direct provider/model, like ChatGPT
 
 ## 7. Integration
 - [x] Wire router into ChatViewModel direct-API mode
